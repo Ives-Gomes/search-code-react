@@ -1,20 +1,40 @@
 import React, { useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 
+import api from './services/api';
+
 import './styles.css';
 
 function App() {
   const [inputValue, setInputValue] = useState('');
+  const [code, setCode] = useState({});
 
-  const handleSearch = () => {
-    console.log(inputValue);
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    if (inputValue === '') {
+      alert('Type a code!');
+
+      return;
+    }
+
+    try {
+      const { data } = await api.get(`${inputValue}/json`);
+
+      setCode(data);
+      setInputValue('');
+    } catch (err) {
+      alert('Error... Please, try again.');
+
+      setInputValue('');
+    }
   };
 
   return (
     <div className="container">
       <h1 className="title">Search Code</h1>
 
-      <div className="containerInput">
+      <form className="containerInput">
         <input
           type="text"
           placeholder="Type your code..."
@@ -25,20 +45,34 @@ function App() {
         <button
           type="submit"
           className="buttonSearch"
-          onClick={() => handleSearch()}
+          onClick={(e) => handleSearch(e)}
         >
           <FiSearch size={25} color="#fff" />
         </button>
-      </div>
+      </form>
 
-      <main className="main">
-        <h2>CODE: 60864-525</h2>
+      {Object.keys(code).length > 0 && (
+        <main className="main">
+          <h2>
+            CODE:
+            {code.cep}
+          </h2>
 
-        <span>Rua teste</span>
-        <span>Complemento: asdasdd</span>
-        <span>Vila verde</span>
-        <span>Ceará</span>
-      </main>
+          <span>{code.logradouro}</span>
+          {code.complemento && (
+            <span>
+              Complement:
+              {code.complemento}
+            </span>
+          )}
+          <span>{code.bairro}</span>
+          <span>
+            {code.localidade}
+            -
+            {code.uf}
+          </span>
+        </main>
+      )}
     </div>
   );
 }
